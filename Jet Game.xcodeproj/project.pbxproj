@@ -7,7 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6D12EB821C4DCBC200A16B91 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB811C4DCBC200A16B91 /* main.cpp */; };
+		6D12EB821C4DCBC200A16B91 /* game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB811C4DCBC200A16B91 /* game.cpp */; };
+		6D12EB891C4DCC3500A16B91 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB881C4DCC3500A16B91 /* stdafx.cpp */; };
+		6D12EB8C1C4DCC7100A16B91 /* sys_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB8B1C4DCC7100A16B91 /* sys_osx.cpp */; };
+		6D12EB8E1C4DCE7A00A16B91 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D12EB8D1C4DCE7A00A16B91 /* Cocoa.framework */; };
+		6D12EB901C4DCE8400A16B91 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D12EB8F1C4DCE8400A16B91 /* IOKit.framework */; };
+		6D12EB921C4DCE8A00A16B91 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D12EB911C4DCE8A00A16B91 /* OpenAL.framework */; };
+		6D12EB941C4DCE9000A16B91 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D12EB931C4DCE9000A16B91 /* OpenGL.framework */; };
+		6D12EB991C4DDDE100A16B91 /* gEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB981C4DDDE100A16B91 /* gEngine.cpp */; };
+		6D12EB9C1C4EFF1200A16B91 /* core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D12EB9B1C4EFF1200A16B91 /* core.cpp */; };
+		6D9188E01C59A4D1004A210E /* LEGACY_CODE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6D9188DF1C59A4D1004A210E /* LEGACY_CODE.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +33,22 @@
 
 /* Begin PBXFileReference section */
 		6D12EB7E1C4DCBC200A16B91 /* Jet Game */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Jet Game"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6D12EB811C4DCBC200A16B91 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		6D12EB811C4DCBC200A16B91 /* game.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = game.cpp; sourceTree = "<group>"; };
+		6D12EB881C4DCC3500A16B91 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
+		6D12EB8A1C4DCC4100A16B91 /* stdafx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
+		6D12EB8B1C4DCC7100A16B91 /* sys_osx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sys_osx.cpp; sourceTree = "<group>"; };
+		6D12EB8D1C4DCE7A00A16B91 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		6D12EB8F1C4DCE8400A16B91 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		6D12EB911C4DCE8A00A16B91 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		6D12EB931C4DCE9000A16B91 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		6D12EB951C4DD45F00A16B91 /* base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = "<group>"; };
+		6D12EB961C4DD47F00A16B91 /* sys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sys.h; sourceTree = "<group>"; };
+		6D12EB971C4DDC7600A16B91 /* gEngine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gEngine.h; sourceTree = "<group>"; };
+		6D12EB981C4DDDE100A16B91 /* gEngine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gEngine.cpp; sourceTree = "<group>"; };
+		6D12EB9A1C4EF87900A16B91 /* core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
+		6D12EB9B1C4EFF1200A16B91 /* core.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = core.cpp; sourceTree = "<group>"; };
+		6D161E8A1C4F2FD600C22E31 /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = data; sourceTree = "<group>"; };
+		6D9188DF1C59A4D1004A210E /* LEGACY_CODE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LEGACY_CODE.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +56,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D12EB941C4DCE9000A16B91 /* OpenGL.framework in Frameworks */,
+				6D12EB921C4DCE8A00A16B91 /* OpenAL.framework in Frameworks */,
+				6D12EB901C4DCE8400A16B91 /* IOKit.framework in Frameworks */,
+				6D12EB8E1C4DCE7A00A16B91 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +69,10 @@
 		6D12EB751C4DCBC200A16B91 = {
 			isa = PBXGroup;
 			children = (
+				6D12EB931C4DCE9000A16B91 /* OpenGL.framework */,
+				6D12EB911C4DCE8A00A16B91 /* OpenAL.framework */,
+				6D12EB8F1C4DCE8400A16B91 /* IOKit.framework */,
+				6D12EB8D1C4DCE7A00A16B91 /* Cocoa.framework */,
 				6D12EB801C4DCBC200A16B91 /* Jet Game */,
 				6D12EB7F1C4DCBC200A16B91 /* Products */,
 			);
@@ -57,7 +89,18 @@
 		6D12EB801C4DCBC200A16B91 /* Jet Game */ = {
 			isa = PBXGroup;
 			children = (
-				6D12EB811C4DCBC200A16B91 /* main.cpp */,
+				6D161E8A1C4F2FD600C22E31 /* data */,
+				6D12EB811C4DCBC200A16B91 /* game.cpp */,
+				6D12EB971C4DDC7600A16B91 /* gEngine.h */,
+				6D12EB981C4DDDE100A16B91 /* gEngine.cpp */,
+				6D12EB9A1C4EF87900A16B91 /* core.h */,
+				6D12EB9B1C4EFF1200A16B91 /* core.cpp */,
+				6D12EB881C4DCC3500A16B91 /* stdafx.cpp */,
+				6D12EB8A1C4DCC4100A16B91 /* stdafx.h */,
+				6D12EB8B1C4DCC7100A16B91 /* sys_osx.cpp */,
+				6D12EB961C4DD47F00A16B91 /* sys.h */,
+				6D12EB951C4DD45F00A16B91 /* base.h */,
+				6D9188DF1C59A4D1004A210E /* LEGACY_CODE.cpp */,
 			);
 			path = "Jet Game";
 			sourceTree = "<group>";
@@ -118,7 +161,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D12EB821C4DCBC200A16B91 /* main.cpp in Sources */,
+				6D12EB821C4DCBC200A16B91 /* game.cpp in Sources */,
+				6D9188E01C59A4D1004A210E /* LEGACY_CODE.cpp in Sources */,
+				6D12EB991C4DDDE100A16B91 /* gEngine.cpp in Sources */,
+				6D12EB8C1C4DCC7100A16B91 /* sys_osx.cpp in Sources */,
+				6D12EB9C1C4EFF1200A16B91 /* core.cpp in Sources */,
+				6D12EB891C4DCC3500A16B91 /* stdafx.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +255,9 @@
 		6D12EB861C4DCBC200A16B91 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_LDFLAGS = "-lglfw";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -214,6 +265,12 @@
 		6D12EB871C4DCBC200A16B91 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
+				OTHER_LDFLAGS = "-lglfw";
+				"OTHER_LDFLAGS[arch=*]" = "-lglfw";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -237,6 +294,7 @@
 				6D12EB871C4DCBC200A16B91 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
