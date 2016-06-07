@@ -34,7 +34,7 @@ inline void vprint(vec r) { std::cout << "(" << r.x << "," << r.y << ")\n"; }
 inline vec vmake(float x, float y) {vec r2; r2.x = x; r2.y = y; return(r2); }
 inline vec vadd(vec v1, vec v2) {return(vmake(v1.x + v2.x, v1.y + v2.y));}
 inline vec vsub(vec v1, vec v2) {return(vmake(v1.x - v2.x, v1.y - v2.y));}
-inline vec vscale(vec v, float f) {return(vmake(v.x * f, v.y * f));}
+inline vec vscale(vec v, float f) {return(vmake((v.x) * f, (v.y) * f));}
 inline float vlen2(vec v) {return(v.x * v.x + v.y * v.y);}
 inline float vlen(vec v) {return((float)sqrt(vlen2(v)));}
 inline float vdot(vec v1, vec v2) {return(v1.x * v2.x + v1.y * v2.y);}

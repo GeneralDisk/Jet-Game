@@ -187,7 +187,17 @@ void core::RenderCenteredSprite(vec pos, vec size, int texIndex, rgba color, boo
         
         glBindTexture( GL_TEXTURE_2D, gTextures[texIndex].tex );
         glBegin( GL_QUADS );
-        if (flip) {
+        if (flip && reverse) {
+            glTexCoord2d(0.0, 0.0);
+            glVertex2f(p1.x, p0.y);
+            glTexCoord2d(gTextures[texIndex].w, 0.0);
+            glVertex2f(p0.x, p0.y);
+            glTexCoord2d(gTextures[texIndex].w, gTextures[texIndex].h);
+            glVertex2f(p0.x, p1.y);
+            glTexCoord2d(0.0, gTextures[texIndex].h);
+            glVertex2f(p1.x, p1.y);
+        }
+        else if (flip) {
             glTexCoord2d(0.0, 0.0);
             glVertex2f(p0.x, p0.y);
             glTexCoord2d(gTextures[texIndex].w, 0.0);
@@ -523,7 +533,7 @@ void core::stopAllSounds(void) {
 void core::pauseAllSounds(bool resume) {
     for (int i = 0; i < MAX_SOUNDS; i++) {
         if (gWaves[i].inUse && gWaves[i].isActive) {
-            if (i == W_DOOM1 || i == W_SSJ3 || i == W_BIGBLUE_SS || i == W_STAT_BRIEFING) {
+            if (i == W_DOOM1 || i == W_SSJ3 || i == W_BIGBLUE_SS || i == W_STAT_BRIEFING) { //we only want to resume looped soundtracks
             if (resume) {
                 alSourcePlay(gWaves[i].source);
             }
@@ -533,5 +543,45 @@ void core::pauseAllSounds(bool resume) {
         }
     }
 }
+
+//===============================================================
+//setVolume()
+void core::setVolume(int soundIndex, float newVolume) {
+    if (soundIndex < MAX_SOUNDS) {
+        if (gWaves[soundIndex].inUse) {
+            alSourcef(gWaves[soundIndex].source, AL_GAIN, newVolume);
+           // alListenerf(soundIndex, AL_GAIN, newVolume);
+        }
+    }
+}
+
+//===============================================================
+//setMusicVolume()
+void core::setMusicVolume(float newVolume) {
+    for (int i = 0; i < FIRST_SFX; i++) {
+        setVolume(i, newVolume);
+    }
+}
+
+//===============================================================
+//setSfxVolume()
+void core::setSfxVolume(float newVolume) {
+    for (int i = FIRST_SFX; i < MAX_SOUNDS; i++) {
+        setVolume(i, newVolume);
+    }
+} //NOTE: this assumes FIRST_SFX is set to the first SFX index and that everything following it is an SFX
+
+//===============================================================
+//setGlobalVolume()
+void core::setGlobalVolume(float newVolume) {
+    for (int i = 0; i < MAX_SOUNDS; i++) {
+        setVolume(i, newVolume);
+    }
+}
+
+
+
+
+
 
 

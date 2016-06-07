@@ -45,8 +45,11 @@
 #define TILT_LL_THREASHOLD -0.5f
 
 //PLAYER SHIP CONSTANTS
+#define PLAYER_SHIP_W 108 //18
+#define PLAYER_SHIP_H 150 //25
+#define PLAYER_SHIP_SIZE_MODIFIER 6.f
 #define PSHIP entityList[0] //define player ship as the zeroth entity
-#define MAX_PLAYER_HP 100.f
+#define INITIAL_PLAYER_HP 100.f
 #define INITIAL_FORWARD_SPEED 10.f
 #define MAX_X_VELOCITY 10.f
 #define MAX_Y_VELOCITY 10.f
@@ -103,13 +106,13 @@
 #define EN_SINGLE_BLASTER_H 66.f
 #define EN_SINGLE_BLASTER_DMG 10.f
 #define EN_SINGLE_BLASTER_RELOAD 10.f
-#define EN_ROCKET_Y_VEL -12.f
+#define EN_ROCKET_Y_VEL 12.f
 #define EN_ROCKET_DMG 10.f
 #define EN_ROCKET_RELOAD 8.f
 #define EN_BLUE_LAZER_BLAST_TIME 20.f
 #define EN_BLUE_LAZER_DMG 1.f
 #define EN_BLUE_LAZER_RELOAD_TIME 10.f
-#define EN_BLASTER_Y_VELOCITY -MAX_Y_VELOCITY
+#define EN_BLASTER_Y_VELOCITY MAX_Y_VELOCITY
 #define EN_ROCKET_MAX_X_VEL 10.f
 #define EN_ROCKET_DELTA_X_VEL 0.5f
 
@@ -147,6 +150,21 @@
 #define IMPACT_VOL 0.4f
 #define LASER_VOL 0.12f
 
+//SCORE CONSTANTS
+#define SCORE_GJET 10
+#define SCORE_MJET 20
+#define SCORE_BLADE 30
+#define SCORE_BOSS1 100
+#define SCORE_HP_UPG 5
+#define SCORE_OMEGA_UPG 10
+#define SCORE_PRIMARY_UPG 10
+#define SCORE_SECONDARY_UPG 10
+#define SCORE_TERTIARY_UPG 10
+#define SCORE_PER_HP 1
+#define SCORE_PER_ACCURACY 5
+
+
+
 using namespace std;
 
 //===============================================================
@@ -159,7 +177,7 @@ using namespace std;
 gEngine::gEngine(void) {
     
     masterVolume = MAX_VOL;
-    musicVolume = 0; //MAX_VOL;
+    musicVolume = MAX_VOL;
     sfxVolume = MAX_VOL;
     //DEBUG: Music muting
     //musicVolume = 0.f;
@@ -167,7 +185,6 @@ gEngine::gEngine(void) {
     victory = false;
     
     gCore.playSound(W_SSJ3, musicVolume*masterVolume, true);
-    //MARK: cur
     prevPress = false;
     currentLevel = randi(1,7);
     gameTerrain = new terrain(this);
@@ -215,29 +232,34 @@ gEngine::gEngine(void) {
     levelSelectMenu->items[7].setAtr("lava", 4.f, true);
     levelSelectMenu->items[8].setAtr("back", 4.f, true);
     
-    optionsMenu = new Menu(4);
+    optionsMenu = new Menu(5);
     optionsMenu->positionOfTop = vmake(G_WIDTH/2, G_HEIGHT*.70);
     optionsMenu->items[0].setAtr("options", 4.f, true);
-    optionsMenu->items[1].setAtr("music on/off", 4.f, true);
-    optionsMenu->items[2].setAtr("sfx on/off", 4.f, true);
-    optionsMenu->items[3].setAtr("back", 4.f, true);
+    optionsMenu->items[1].setAtr("master vol 100%", 4.f, true);
+    optionsMenu->items[2].setAtr("music vol 100%", 4.f, true);
+    optionsMenu->items[3].setAtr("sfx vol 100%", 4.f, true);
+    optionsMenu->items[4].setAtr("back", 4.f, true);
     
-    helpInfoMenu = new Menu(3);
+    helpInfoMenu = new Menu(6);
     helpInfoMenu->positionOfTop = vmake(G_WIDTH/2, G_HEIGHT*.70);
     helpInfoMenu->items[0].setAtr("help/info", 4.f, true);
-    helpInfoMenu->items[1].setAtr("welcome to jet game by maris kali, in this game kill enemy jets and achieve glory!", 4.f, true, true);
+    helpInfoMenu->items[1].setAtr("welcome to jet game by maris kali, in this game kill enemy jets and achieve glory!", 2.5f, true, true);
+    helpInfoMenu->items[2].setAtr("   ", 2.f, true, true);
+    helpInfoMenu->items[3].setAtr("use the arrow keys or 'wasd' to navigate, use 'space' to fire and use 'q' to use your omega bomb.", 2.5f, true, true);
+    helpInfoMenu->items[4].setAtr("   ", 2.f, true, true);
    // helpInfoMenu->items[2].setAtr("placeholder text", 4.f, true, true);
   //  helpInfoMenu->items[3].setAtr("placeholder text", 4.f, true, true);
   //  helpInfoMenu->items[4].setAtr("placeholder text", 4.f, true, true);
 //    helpInfoMenu->items[5].setAtr("placeholder text", 4.f, true, true);
-    helpInfoMenu->items[2].setAtr("back", 4.f, true);
+    helpInfoMenu->items[5].setAtr("back", 4.f, true);
     
-    pauseMenu = new Menu(4);
+    pauseMenu = new Menu(5);
     pauseMenu->positionOfTop = vmake(G_WIDTH/2, G_HEIGHT*.60);
     pauseMenu->items[0].setAtr("paused", 8.f, true);
     pauseMenu->items[1].setAtr("resume", 4.f, true);
-    pauseMenu->items[2].setAtr("main menu", 4.f, true);
-    pauseMenu->items[3].setAtr("exit", 4.f, true);
+    pauseMenu->items[2].setAtr("options", 4.f, true);
+    pauseMenu->items[3].setAtr("main menu", 4.f, true);
+    pauseMenu->items[4].setAtr("exit", 4.f, true);
     
     questionMenu = new Menu(3);
     questionMenu->positionOfTop = vmake(G_WIDTH/2, G_HEIGHT*.60);
@@ -248,11 +270,12 @@ gEngine::gEngine(void) {
     currentMenu = mainMenu;
     
     game_state = GS_MAIN_MENU;
+
     //DEBUG
     //game_state = GS_STATSCREEN;
     //curMenu = M_NULL;
     //gCore.playSound(W_BIGBLUE_SS, true);
-    
+
     //make player
     for (int i = 0; i < MAX_ENTITIES; i++) {
         entityList[i] = nullptr;
@@ -260,14 +283,18 @@ gEngine::gEngine(void) {
     for (int i = 0; i < MAX_ANIMATIONS; i++) {
         animationList[i] = nullptr;
     }
-    
-    bkgMultiplier = 0.5f;
-    bkgMultiplier2 = 1.5f;
+    player_stats.playerHP = INITIAL_PLAYER_HP;
+    player_stats.weapons[0] = T_SINGLE_SHOT;
+    player_stats.weapons[1] = T_BKG;
+    player_stats.weapons[2] = T_BKG;
+    player_stats.armorRating = 0.f;
+    player_stats.shipType = beigeShip;
+    player_stats.score = 0;
   
     
     //create the player ship
-
-    createEntity(E_PLAYERSHIP, vmake(G_WIDTH/2.0f,(0+(PLAYER_SHIP_H/2))), vmake(0,0), PLAYER_SHIP_W, PLAYER_SHIP_H, 0, T_BSHIP_C,beigeShip); //this is how you insert entities into the entityList now
+    
+    createEntity(E_PLAYERSHIP, vmake(G_WIDTH/2.0f,(0+(gCore.getTexHeight(player_stats.shipType[2])/2))), vmake(0,0), 0, 0, 0, player_stats.shipType[2], player_stats.shipType); //this is how you insert entities into the entityList now
     //createAnimation(A_BLACK_FADE_IN, nullptr, vmake(G_WIDTH/2, G_HEIGHT/2), vmake(0,0), MAIN_MENU_BKG_FADE_TIME);
     static_cast<player*>(PSHIP)->numOmegaWeapon = 2;
     levelBoss = nullptr;
@@ -317,7 +344,7 @@ void gEngine::render(void) {
         defaul.a = 0.75f;
         float playerHPpercent, playerHPbarWidth;
         playerHPbarWidth = 50.f;
-        playerHPpercent = PSHIP->getHp()/MAX_PLAYER_HP;
+        playerHPpercent = PSHIP->getHp()/player_stats.playerHP;
         //DEBUG uncomment to get hp bar back
         
         gCore.RenderCenteredSprite(vmake(0.f+25.f, (G_HEIGHT*playerHPpercent)/2.f), vmake(50.f, (G_HEIGHT*playerHPpercent)), T_HP_BAR, defaul, 0, 0);
@@ -349,6 +376,8 @@ void gEngine::render(void) {
             gCore.RenderCenteredSprite(vmake((G_WIDTH-12.f), (G_HEIGHT*bossHPpercent)/2.f), vmake(24.f, (G_HEIGHT*bossHPpercent)), T_BOSS_HP_BAR, defaul, 0, 0);
             
         }
+        //render score
+        renderScore(PSHIP->getScore(), player_stats.score);
         
         //render all entities
         for (int i = 0; i < MAX_ENTITIES; i++) {
@@ -401,6 +430,9 @@ void gEngine::render(void) {
                 
             }
         }
+        
+        
+        
     }
     else {
         generateTerrain(1);
@@ -423,9 +455,10 @@ void gEngine::render(void) {
     if (game_state == GS_VICTORY) { //render specific for victory
         
         float percent = (main_timer)/(VICTORY_SCREEN_TIME-5.f);
-        
+
         black.a = percent;
         gCore.RenderCenteredSprite(vmake(G_WIDTH/2, G_HEIGHT/2), vmake(G_WIDTH, G_HEIGHT), T_BKG, black, 0, 0); //black screen fade in
+        
         //gCore.RenderCenteredString("you win!", vmake(G_WIDTH/2, G_HEIGHT*.7), 4.f, defaul, 0);
     }
     
@@ -564,6 +597,14 @@ void gEngine::processInput(void) {
     bool rightBracket = SYS_KeyPressed(']');
     bool pressP = SYS_KeyPressed('P');
     bool pressQ = SYS_KeyPressed('Q');
+    bool pressE = SYS_KeyPressed('E');
+    bool pressX = SYS_KeyPressed('X');
+    bool pressW = SYS_KeyPressed('W');
+    bool pressA = SYS_KeyPressed('A');
+    bool pressS = SYS_KeyPressed('S');
+    bool pressD = SYS_KeyPressed('D');
+    
+    
     bool enter = SYS_KeyPressed(SYS_KEY_ENTER);
     
     
@@ -571,9 +612,11 @@ void gEngine::processInput(void) {
     if (rightBracket && !prevrightBracket) {
         //spawnEnemy();
         //cout << "SPAWN\n";
-        createEntity(E_POWERUP, vmake(G_WIDTH/2,G_HEIGHT*.85f), vmake(0,0), 0, 0, 0, T_UPG_SINGLE_SIDEWAYS_SHOT_M, greenShip);
-        
+        //createEntity(E_POWERUP, vmake(G_WIDTH/2,G_HEIGHT*.85f), vmake(0,0), 0, 0, 0, T_UPG_SINGLE_SIDEWAYS_SHOT_M, greenShip);
+        createEntity(E_JET, vmake(G_WIDTH/2,G_HEIGHT*.5f), vmake(0,0), 0, 0, 0, greenShip[2], greenShip, true);
     }
+    
+    
     
     if (game_state == GS_PLAYING || game_state == GS_BOSSFIGHT) {
         /**
@@ -603,6 +646,7 @@ void gEngine::processInput(void) {
         
         if (leftBracket && !prevleftBracket) {
             //reset game
+            //DEBUGGING COMMAND
                 resetGame();
         }
         /** DEBUG spawn enemies & playerinput
@@ -622,8 +666,13 @@ void gEngine::processInput(void) {
             }
         } **/
         
+        if ((pressX || pressE) && !prevpressX && !prevpressE) {
+            //player_stats.orientation = player_stats.orientation*(-1);
+            PSHIP->flipGfx = !PSHIP->flipGfx;
+        }
+        
         //Steering left and right
-        if (left) {
+        if (left || pressA) {
             if (PSHIP->vel.x >= -(MAX_X_VELOCITY)) {
                 PSHIP->vel.x -= X_TURN_VELOCITY;
                 if (PSHIP->vel.x < -(MAX_X_VELOCITY)) //set speed limit
@@ -632,7 +681,7 @@ void gEngine::processInput(void) {
             if (PSHIP->inertia > MIN_INERTIA)
                 PSHIP->inertia -= INERTIA_TILT;
         }
-        else if (right) {
+        else if (right || pressD) {
             if (PSHIP->vel.x <= (MAX_X_VELOCITY)) {
                 PSHIP->vel.x += X_TURN_VELOCITY;
                 if (PSHIP->vel.x > (MAX_X_VELOCITY)) //set speed limit
@@ -659,12 +708,12 @@ void gEngine::processInput(void) {
         
         //steering up and down
         //process forward and backward player movement
-        if (up) {
+        if (up || pressW) {
             PSHIP->vel.y += Y_INCREASE_VELOCITY;
             if (PSHIP->vel.y > (MAX_Y_VELOCITY)) //set speed limit
                 PSHIP->vel.y = MAX_Y_VELOCITY;
         }
-        else if (down) {
+        else if (down || pressS) {
             PSHIP->vel.y -= Y_INCREASE_VELOCITY;
             if (PSHIP->vel.y < -(MAX_Y_VELOCITY)) //set speed limit
                 PSHIP->vel.y = -MAX_Y_VELOCITY;
@@ -684,33 +733,6 @@ void gEngine::processInput(void) {
         if (space) {
             PSHIP->fireWeapons(this);
         }
-        /**if (space && (PSHIP->getReloadTimer(0) <= 0.f)) {
-            
-            
-            int weapIndex = createEntity(E_PLAYER_WEAPON, PSHIP->pos, vmake(0, BLASTER_Y_VELOCITY), 0, 0, 0, PSHIP->getCurWeapon(0), 0);
-            //cout << "FIRE weapon: " << weapIndex << endl;
-
-            if (weapIndex > 0) {
-                gCore.playSound(W_LASER_SHOT, LASER_VOL*sfxVolume*masterVolume);
-                shotsFired++;
-                PSHIP->getReloadTimer(0) = static_cast<weapon*>(entityList[weapIndex])->reloadInterval;
-            }
-            
-        }//fire player ship weapon
-        else if (PSHIP->getReloadTimer(0) > 0.f)
-            PSHIP->getReloadTimer(0) -= RELOAD_DECAY;
-        
-        //secondary weapon
-        if (PSHIP->subType == EST_SECONDARY_WEP) { //if PSHIP has a secondary weapon
-            if (space && (PSHIP->getReloadTimer(1) <= 0.f)) {
-                
-                int weapIndex = createEntity(E_PLAYER_WEAPON, PSHIP->pos, vmake(0, ROCKET_Y_VELOCITY), 0, 0, 0, PSHIP->getCurWeapon(1), 0);
-                if (weapIndex > 0)
-                    PSHIP->getReloadTimer(1) = static_cast<weapon*>(entityList[weapIndex])->reloadInterval;
-            }//fire player secondary weapon
-            else if (PSHIP->getReloadTimer(1) > 0.f)
-                PSHIP->getReloadTimer(1) -= RELOAD_DECAY;
-        } **/
         
     
     }
@@ -745,11 +767,89 @@ void gEngine::processInput(void) {
             }
         }
         
+        
+        if (left && right) {
+            
+        }
+        else if (left) {
+            if (curMenu == M_OPTIONS) {
+                char conv[64];
+                if (curSelectedMenuIndex == 1) { // master vol
+                    masterVolume -= 0.01f;
+                    if (masterVolume < 0.f) {
+                        masterVolume = 0.f;
+                    }
+                    gCore.setMusicVolume(masterVolume*musicVolume);
+                    gCore.setSfxVolume(masterVolume*sfxVolume);
+                    sprintf(conv, "master vol %d", (int)(masterVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[1].setAtr(conv, 4.f, true);
+                }
+                else if (curSelectedMenuIndex == 2) { //musiv vol
+                    musicVolume -= 0.01f;
+                    if (musicVolume < 0.f) {
+                        musicVolume = 0.f;
+                    }
+                    gCore.setMusicVolume(masterVolume*musicVolume);
+                    sprintf(conv, "music vol %d", (int)(musicVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[2].setAtr(conv, 4.f, true);
+                }
+                else if (curSelectedMenuIndex == 3) { //sfx vol
+                    sfxVolume -= 0.01f;
+                    if (sfxVolume < 0.f) {
+                        sfxVolume = 0.f;
+                    }
+                    gCore.setSfxVolume(masterVolume*sfxVolume);
+                    sprintf(conv, "sfx vol %d", (int)(sfxVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[3].setAtr(conv, 4.f, true);
+                }
+                
+            }
+        }
+        else if (right) {
+            if (curMenu == M_OPTIONS) {
+                char conv[64];
+                if (curSelectedMenuIndex == 1) { // master vol
+                    masterVolume += 0.01f;
+                    if (masterVolume > 1.f) {
+                        masterVolume = 1.f;
+                    }
+                    gCore.setMusicVolume(masterVolume*musicVolume);
+                    gCore.setSfxVolume(masterVolume*sfxVolume);
+                    sprintf(conv, "master vol %d", (int)(masterVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[1].setAtr(conv, 4.f, true);
+                }
+                else if (curSelectedMenuIndex == 2) { //musiv vol
+                    musicVolume += 0.01f;
+                    if (musicVolume > 1.f) {
+                        musicVolume = 1.f;
+                    }
+                    gCore.setMusicVolume(masterVolume*musicVolume);
+                    sprintf(conv, "music vol %d", (int)(musicVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[2].setAtr(conv, 4.f, true);
+                }
+                else if (curSelectedMenuIndex == 3) { //sfx vol
+                    sfxVolume += 0.01f;
+                    if (sfxVolume > 1.f) {
+                        sfxVolume = 1.f;
+                    }
+                    gCore.setSfxVolume(masterVolume*sfxVolume);
+                    sprintf(conv, "sfx vol %d", (int)(sfxVolume*100));
+                    strcat(conv, "%");
+                    optionsMenu->items[3].setAtr(conv, 4.f, true);
+                }
+            }
+        }
+        
         if (enter && !preventer) {
             switch (curMenu ) {
                 case M_MAIN_MENU:
                 {
-
+                    prevMenu = M_MAIN_MENU;
                     if (curSelectedMenuIndex == 1) { //go to lvl select
                         curMenu = M_LEVEL_SELECT;
                     }
@@ -760,7 +860,7 @@ void gEngine::processInput(void) {
                         curMenu = M_HELP_INFO;
                     }
                     else if (curSelectedMenuIndex == curMenuSize-1) { //go to question menu
-                        prevMenu = curMenu;
+                        //prevMenu = curMenu;
                         curMenu = M_QUESTION;
                     }
                     
@@ -770,7 +870,8 @@ void gEngine::processInput(void) {
                 {
                     
                     if (curSelectedMenuIndex == curMenuSize-1) { //go back to main menu
-                        curMenu = M_MAIN_MENU;
+                        curMenu = prevMenu;
+                        prevMenu = M_LEVEL_SELECT;
                     }
                     else {
                         curMenu = M_NULL;
@@ -782,14 +883,51 @@ void gEngine::processInput(void) {
                 }
                 case M_OPTIONS:
                 {
-                    if (curSelectedMenuIndex == 1) { //toggle music on/off
+                    char conv[64];
+                    /**
+                    optionsMenu->items[1].setAtr("master vol 100%", 4.f, true);
+                    optionsMenu->items[2].setAtr("music vol 100%", 4.f, true);
+                    optionsMenu->items[3].setAtr("sfx vol 100%", 4.f, true);
+                    **/
+                    if (curSelectedMenuIndex == 1) { //toggle master volume control
+                        if (masterVolume != 0.f) {
+                            masterVolume = 0.f;
+                        }
+                        else
+                            masterVolume = 1.f;
+                        sprintf(conv, "master vol %d", (int)(masterVolume*100));
+                        strcat(conv, "%");
+                        optionsMenu->items[1].setAtr(conv, 4.f, true);
+                        gCore.setMusicVolume(masterVolume*musicVolume);
+                        gCore.setSfxVolume(masterVolume*sfxVolume);
+                        //gCore.setGlobalVolume(masterVolume);
                         
                     }
-                    else if (curSelectedMenuIndex == 2) { //toggld sfx on/off
-                        
+                    else if (curSelectedMenuIndex == 2) { //toggld music control
+                        if (musicVolume != 0.f) {
+                            musicVolume = 0.f;
+                        }
+                        else
+                            musicVolume = 1.f;
+                        sprintf(conv, "music vol %d", (int)(musicVolume*100));
+                        strcat(conv, "%");
+                        optionsMenu->items[2].setAtr(conv, 4.f, true);
+                        gCore.setMusicVolume(masterVolume*musicVolume);
                     }
-                    else if (curSelectedMenuIndex == curMenuSize-1) { //go back to main menu
-                        curMenu = M_MAIN_MENU;
+                    else if (curSelectedMenuIndex == 3) { //toggle sfx control
+                        if (sfxVolume != 0.f) {
+                            sfxVolume = 0.f;
+                        }
+                        else
+                            sfxVolume = 1.f;
+                        sprintf(conv, "sfx vol %d", (int)(sfxVolume*100));
+                        strcat(conv, "%");
+                        optionsMenu->items[3].setAtr(conv, 4.f, true);
+                        gCore.setSfxVolume(masterVolume*sfxVolume);
+                    }
+                    else if (curSelectedMenuIndex == curMenuSize-1) { //go back to previous menu
+                        curMenu = prevMenu;
+                        prevMenu = M_OPTIONS;
                     }
 
                     break;
@@ -800,7 +938,7 @@ void gEngine::processInput(void) {
                         
                     }
                     else if (curSelectedMenuIndex == curMenuSize-1) { //go back to main menu
-                        curMenu = M_MAIN_MENU;
+                        curMenu = prevMenu;
                     }
                     break;
                 }
@@ -811,7 +949,12 @@ void gEngine::processInput(void) {
                         curMenu = M_NULL;
                         gCore.pauseAllSounds(true); //resume sounds
                     }
-                    else if (curSelectedMenuIndex == 2) { //return to main menu
+                    else if (curSelectedMenuIndex == 2) { //options menu
+                        curMenu = M_OPTIONS;
+                        prevMenu = M_PAUSE;
+                        
+                    }
+                    else if (curSelectedMenuIndex == 3) { //return to main menu
                         game_state = GS_MAIN_MENU;
                         curMenu = M_MAIN_MENU;
                         gCore.stopAllSounds();
@@ -876,6 +1019,12 @@ void gEngine::processInput(void) {
     prevrightBracket = SYS_KeyPressed(']');
     prevpressP = SYS_KeyPressed('P');
     prevpressQ = SYS_KeyPressed('Q');
+    prevpressX = pressX;//SYS_KeyPressed('X');
+    prevpressE = pressE;
+    prevpressW = pressW;
+    prevpressA = pressA;
+    prevpressS = pressS;
+    prevpressD = pressD;
     preventer = SYS_KeyPressed(SYS_KEY_ENTER);
     
     
@@ -921,7 +1070,7 @@ gState gEngine::runLogic(void) {
         //generate enemies
         if (game_state == GS_PLAYING) {
             //DEBUG uncomment
-            //generateLevelEnemies();
+            generateLevelEnemies();
     
         }
         
@@ -951,6 +1100,7 @@ gState gEngine::runLogic(void) {
                     int aniIndex;
                     aniIndex = createAnimation(A_EXP_REG, nullptr, levelBoss->position, levelBoss->velocity, BOSS_FINAL_EXP_TIME, BOSS_FINAL_EXP_SIZE_MOD);
                     moveAniToFront(aniIndex);
+                    PSHIP->getScore() += levelBoss->scoreVal;
                     delete[] levelBoss->segments;
                     delete levelBoss;
                     enemiesKilled++;
@@ -966,7 +1116,7 @@ gState gEngine::runLogic(void) {
         for (int i = 1; i < MAX_ENTITIES; i++) {
             if (entityList[i] != nullptr) {
                 
-                //secondary weapon rocket AI
+                //secondary weapon rocket AI for player rockets
                 if (entityList[i]->type == E_PLAYER_WEAPON && entityList[i]->subType == EST_SECONDARY_WEP) {
                     int closestEnemy = -1;
                     float distance = G_HEIGHT*G_WIDTH;
@@ -974,13 +1124,22 @@ gState gEngine::runLogic(void) {
                     //search for enemy that is the closest to the rocket
                     for (int j = 1; j < MAX_ENTITIES; j++) {
                         if (entityList[j] != nullptr && i != j) {
+                            
                             if (entityList[j]->type == E_JET || entityList[j]->type == E_JET_2 || entityList[j]->type == E_RED_JET || entityList[j]->type == E_BLADE || entityList[j]->type == E_RED_BLOB || entityList[j]->type == E_BOSS) { //if j entity is a possible target, find the distance
-                                if (entityList[i]->pos.y < (entityList[j]->pos.y + entityList[j]->height)) { //we only want to track towards enemeys in front of the rocket
+                                if (!entityList[i]->flipGfx && (entityList[i]->pos.y < (entityList[j]->pos.y + entityList[j]->height))) { //we only want to track towards enemeys in front of the rocket
                                     newDist = vdistance(entityList[i]->pos, entityList[j]->pos);
                                     if (distance > newDist) { //if the newDist is smaller than the previous distance
                                         distance = newDist;
                                         closestEnemy = j;
                                     }
+                                }
+                                else if (entityList[i]->flipGfx && (entityList[i]->pos.y > (entityList[j]->pos.y - entityList[j]->height))) { //track fliped rockets toward enemies further below
+                                    newDist = vdistance(entityList[i]->pos, entityList[j]->pos);
+                                    if (distance > newDist) { //if the newDist is smaller than the previous distance
+                                        distance = newDist;
+                                        closestEnemy = j;
+                                    }
+
                                 }
                             }
                         }
@@ -1346,6 +1505,7 @@ gState gEngine::runLogic(void) {
                                             }
                                             else if (otherE->type == E_HEALTHUP) { //if otherE was a healthpickup
                                                 ship->getHp() += otherE->getHp();
+                                                ship->getScore() += SCORE_HP_UPG;
                                                 hpGained += otherE->getHp();
                                                 gCore.playSound(W_POWERUP, sfxVolume*masterVolume);
                                                 otherE->isActive = false; //delete item
@@ -1353,21 +1513,25 @@ gState gEngine::runLogic(void) {
                                             else if (otherE->type == E_POWERUP) { //if otherE was a powerup
                                                 if (otherE->subType == EST_NULL) {
                                                     if (otherE->curGfx == T_UPG_OMEGA_BOMB) { //if the otherE was an OmegaBomb
+                                                        ship->getScore() += SCORE_OMEGA_UPG;
                                                         if (static_cast<player*>(PSHIP)->numOmegaWeapon < 3) { //if Player doesn't already have the max num of OmegaBombs
                                                             static_cast<player*>(PSHIP)->numOmegaWeapon++;
                                                         }
                                                     }
                                                 }
                                                 else if (otherE->subType == EST_PRIMARY_WEP) {
+                                                    ship->getScore() += SCORE_PRIMARY_UPG;
                                                     if (ship->getCurWeapon() < otherE->getCurWeapon())
                                                         ship->getCurWeapon() = otherE->getCurWeapon();
                                                 }
                                                 else if (otherE->subType == EST_SECONDARY_WEP) {
+                                                    ship->getScore() += SCORE_SECONDARY_UPG;
                                                     if (ship->getCurWeapon(1) < otherE->getCurWeapon(1))
                                                         ship->getCurWeapon(1) = otherE->getCurWeapon(1);
                                                     ship->subType = EST_SECONDARY_WEP; //activate secondary weaponsfire
                                                 }
                                                 else if (otherE->subType == EST_TERTIARY_WEP) {
+                                                    ship->getScore() += SCORE_TERTIARY_UPG;
                                                     if (ship->getCurWeapon(2) < otherE->getCurWeapon(2))
                                                         ship->getCurWeapon(2) = otherE->getCurWeapon(2);
                                                     ship->subType = EST_TERTIARY_WEP;
@@ -1488,7 +1652,11 @@ gState gEngine::runLogic(void) {
                 if (entityList[i]->getHp() <= 0.f && entityList[i]->type != E_POWERUP && entityList[i]->state != ES_DESTROYED) { //what happens when shit dies
                     entityList[i]->getHp() = 0.f;
                     if (entityList[i]->type != E_BOSS) {
-                        enemiesKilled++;
+                        if (entityList[i]->type != E_HEALTHUP) {
+                            enemiesKilled++;
+                            PSHIP->getScore() += entityList[i]->getScore(); //add the enemy's score val to player's current score
+                            
+                        }
                         createAnimation(A_EXP_REG, nullptr, entityList[i]->pos, vmake(0,0), ENEMY_EXPLOSION_TIME, EXPLOSION_SIZE_MODIFIER);
                         entityList[i]->isActive = false;
                         gCore.playSound(W_EXPLOSION_1, EXP_VOL*sfxVolume*masterVolume); //entity explosion sound
@@ -1556,7 +1724,7 @@ gState gEngine::runLogic(void) {
         }
         
         //non entity animations (multiple explosions, laser beam charging, special effect, etc...
-        for (int i; i < MAX_ANIMATIONS; i++) {
+        for (int i = 0; i < MAX_ANIMATIONS; i++) {
             if (animationList[i] != nullptr) {
                 if (animationList[i]->isActive) {
                     animationList[i]->updatePos(); //updates animation position relative to it's parent's velocity
@@ -1602,8 +1770,8 @@ gState gEngine::runLogic(void) {
         
         
         //control playership health values
-        if (PSHIP->getHp() > MAX_PLAYER_HP)
-            PSHIP->getHp() = MAX_PLAYER_HP;
+        if (PSHIP->getHp() > player_stats.playerHP)
+            PSHIP->getHp() = player_stats.playerHP;
         
         //Game_state changer
         switch (game_state) {
@@ -1628,7 +1796,7 @@ gState gEngine::runLogic(void) {
                 //if (dying_timer >= (DYING_TIME - PLAYER_EXPLOSION_TIME*1.5f) &&  (dying_timer < ((DYING_TIME - PLAYER_EXPLOSION_TIME*1.5f)+0.1f))) {
                 if (dying_timer >= (DYING_TIME - PLAYER_EXPLOSION_TIME*1.5)) {
                     if (dying_timer < ((DYING_TIME - PLAYER_EXPLOSION_TIME*1.5f)+0.1f))
-                        gCore.playSound(W_EXPLOSION_1*sfxVolume*masterVolume);
+                        gCore.playSound(W_EXPLOSION_1, sfxVolume*masterVolume);
                     PSHIP->width = gCore.getTexWidth(PSHIP->curGfx)*PLAYER_EXPLOSION_SIZE_MODIFIER;
                     PSHIP->height = gCore.getTexHeight(PSHIP->curGfx)*PLAYER_EXPLOSION_SIZE_MODIFIER;
                 }
@@ -1660,6 +1828,8 @@ gState gEngine::runLogic(void) {
                     //cout << "victory?\n";
                     game_state = GS_VICTORY;
                     gCore.playSound(W_IND_VICTORY, sfxVolume*MAX_VOL*masterVolume);
+                    player_stats.score += PSHIP->getScore();
+                    PSHIP->getScore() = 0;
                     main_timer = 0.f;
                 }
                 break;
@@ -1745,6 +1915,34 @@ void gEngine::renderMenu(Menu *menu) {
 }
 
 //===============================================================
+//renderScore()
+void gEngine::renderScore(int levelScore, int overallScore) {
+    
+    char conv[64];
+    rgba defaul(1.f,1.f,1.f,1.f);
+    float w, h;
+    float sizeMod = 2.0f;
+    w = gCore.getTexWidth(T_SIZER_KROMASKY)*sizeMod; //find size of the font
+    h = gCore.getTexHeight(T_SIZER_KROMASKY)*sizeMod;
+
+    int check = (levelScore + overallScore)/10;
+    int size = 1;
+    
+    while (check != 0) {
+        check = check/10;
+        size++;
+    } //determine the # of digets in currentScore (i.e.  for 100, size = 3)
+    
+    vec position = vmake(G_WIDTH - (2.5*w + ((size-1)*w/2)  ), G_HEIGHT - (1.5*h)); //shift position of the score so that the rightmost side appears to never move with growing numbers
+    
+    sprintf(conv, "%d", (levelScore + overallScore));
+    
+    
+    gCore.RenderCenteredString(conv, position, sizeMod, defaul, 0);
+    
+}
+
+//===============================================================
 //generateTerrain()
 void gEngine::generateTerrain(int level) {
     rgba defaul(1.f,1.f,1.f,1.f);
@@ -1799,22 +1997,30 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                         newPlayer->expGfxSet[i] = nukeEXP[i];
                     }
                     newPlayer->RGBA.setVal(1.f,1.f,1.f,1.f);
-                    newPlayer->hp = MAX_PLAYER_HP;
+                    newPlayer->hp = player_stats.playerHP;
                     newPlayer->isAnimated = false;
                     newPlayer->reloadTimer = 0.f;
                     newPlayer->secondaryReloadTimer = 0.f;
-                    newPlayer->currentWeapon = T_SINGLE_SHOT;
-                    newPlayer->currentSecondaryWeapon = T_BKG;
+                    newPlayer->currentWeapon = player_stats.weapons[0];
+                    newPlayer->currentSecondaryWeapon = player_stats.weapons[1];
                     newPlayer->tertiaryReloadTimer = 0.f;
-                    newPlayer->currentTertiaryWeapon = T_BKG;
+                    newPlayer->currentTertiaryWeapon = player_stats.weapons[2];
+                    /**
+                    newPlayer->gfxSet[0] = player_stats.shipType[0];
+                    newPlayer->gfxSet[1] = player_stats.shipType[1];
+                    newPlayer->gfxSet[2] = player_stats.shipType[2];
+                    newPlayer->gfxSet[3] = player_stats.shipType[3];
+                    newPlayer->gfxSet[4] = player_stats.shipType[4];
+                    **/
                     newPlayer->gfxSet[0] = GFXset[0];
                     newPlayer->gfxSet[1] = GFXset[1];
                     newPlayer->gfxSet[2] = GFXset[2];
                     newPlayer->gfxSet[3] = GFXset[3];
                     newPlayer->gfxSet[4] = GFXset[4];
-                    //newPlayer->width = gCore.getTexWidth(curGFX)*ENEMY_SIZE_MOD;
-                    //newPlayer->height = gCore.getTexHeight(curGFX)*ENEMY_SIZE_MOD;
+                    newPlayer->width = gCore.getTexWidth(curGFX)*PLAYER_SHIP_SIZE_MODIFIER;
+                    newPlayer->height = gCore.getTexHeight(curGFX)*PLAYER_SHIP_SIZE_MODIFIER;
                     newPlayer->numGfx = 5;
+                    newPlayer->curScore = 0;
                     newEntity = newPlayer;
                     break;
                 }
@@ -1850,6 +2056,7 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                     newEnemy->height = gCore.getTexHeight(curGFX)*ENEMY_SIZE_MOD;
                     newEnemy->numGfx = 5;
                     newEnemy->hitTimer = 0.f;
+                    newEnemy->scoreVal = SCORE_GJET;
                     newEntity = newEnemy;
                     break;
                 }
@@ -1884,6 +2091,7 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                         newEnemy->gfxSet[i] = GFXset[i];
                     }
                     newEnemy->hitTimer = 0.f;
+                    newEnemy->scoreVal = SCORE_MJET;
                     newEntity = newEnemy;
                     break;
                 }
@@ -1965,6 +2173,7 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                         newEnemy->gfxSet[i] = GFXset[i];
                     }
                     newEnemy->hitTimer = 0.f;
+                    newEnemy->scoreVal = SCORE_BLADE;
                     newEntity = newEnemy;
                     break;
                 }
@@ -2021,6 +2230,7 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                         case T_ROCKET1:
                         {
                             newWeapon->subType = EST_SECONDARY_WEP;
+                            newWeapon->isAnimated = false;
                             newWeapon->damage = ROCKET_DAMAGE;
                             newWeapon->reloadInterval = ROCKET_RELOAD;
                             newWeapon->width = gCore.getTexWidth(T_ROCKET1)*WEAPON_SIZE_MODIFER;
@@ -2030,6 +2240,7 @@ int gEngine::createEntity(EType eType, vec position, vec velocity, int w, int h,
                         case T_ROCKET2:
                         {
                             newWeapon->subType = EST_SECONDARY_WEP;
+                            newWeapon->isAnimated = false;
                             newWeapon->damage = ROCKET_DAMAGE;
                             newWeapon->reloadInterval = ROCKET_RELOAD;
                             newWeapon->width = gCore.getTexWidth(T_ROCKET2)*WEAPON_SIZE_MODIFER;
@@ -2424,26 +2635,31 @@ void gEngine::generateLevelEnemies(void) {
     switch (currentLevel) {
         case 1:
         {
-            generateEnemy(E_JET, (1.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME))); //(1 + (Max spawn rate)*lvl progress)%  chance to generate an enemy ship every frame
+            generateEnemy(E_JET, (1.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME)), L_TOP); //(1 + (Max spawn rate)*lvl progress)%  chance to generate an enemy ship every frame
             break;
         }
         case 2:
         {
-            generateEnemy(E_JET, (2.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME))); //(1 + (Max spawn rate)*lvl progress)%  chance to generate an enemy ship every frame
+            generateEnemy(E_JET, (2.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME)), L_TOP); //(1 + (Max spawn rate)*lvl progress)%  chance to generate an enemy ship every frame
             if (main_timer >= LEVEL_END_TIME/2)
-                generateEnemy(E_JET_2, (1.f + MAX_SPAWN_RATE*((main_timer - LEVEL_END_TIME/2)/LEVEL_END_TIME/2)));
+                generateEnemy(E_JET_2, (1.f + MAX_SPAWN_RATE*((main_timer - LEVEL_END_TIME/2)/LEVEL_END_TIME/2)), L_TOP);
             break;
         }
         case 3:
         {
-            generateEnemy(E_JET, (2.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME)));
-            generateEnemy(E_JET_2, (1.f + (MAX_SPAWN_RATE/2)*((main_timer)/LEVEL_END_TIME)));
+            generateEnemy(E_JET, (2.f + (MAX_SPAWN_RATE)*(main_timer/LEVEL_END_TIME)), L_TOP);
+            generateEnemy(E_JET_2, (1.f + (MAX_SPAWN_RATE/2)*((main_timer)/LEVEL_END_TIME)), L_TOP);
             if (main_timer >= LEVEL_END_TIME/2)
-                generateEnemy(E_BLADE, (1.f + MAX_SPAWN_RATE*((main_timer - LEVEL_END_TIME/2)/LEVEL_END_TIME/2)));
+                generateEnemy(E_BLADE, (1.f + MAX_SPAWN_RATE*((main_timer - LEVEL_END_TIME/2)/LEVEL_END_TIME/2)), L_TOP);
             break;
         }
         case 4:
         {
+            generateEnemy(E_JET, (1.f + (MAX_SPAWN_RATE/2)*(main_timer/LEVEL_END_TIME)), L_TOP);
+            generateEnemy(E_JET_2, (1.f + (MAX_SPAWN_RATE/4)*((main_timer)/LEVEL_END_TIME)), L_TOP);
+            generateEnemy(E_BLADE, (1.f + (MAX_SPAWN_RATE/4)*((main_timer/LEVEL_END_TIME))), L_TOP);
+            if (main_timer >= LEVEL_END_TIME/3)
+                generateEnemy(E_JET, (1.f + (MAX_SPAWN_RATE/4)*((main_timer - LEVEL_END_TIME/3)/LEVEL_END_TIME/3)), L_BOTTOM);
             break;
         }
         case 5:
@@ -2468,25 +2684,51 @@ void gEngine::generateLevelEnemies(void) {
 
 //===============================================================
 //generateEnemy()
-void gEngine::generateEnemy(EType etype, float chanceToSpawn) {
+void gEngine::generateEnemy(EType etype, float chanceToSpawn, location spawnLOC) {
     bool isGenerated;
     isGenerated = gCore.randchance(chanceToSpawn);
 
     if (isGenerated) {
         //find location
-        vec spawnLoc = vmake((gCore.randf(G_WIDTH*.1, G_WIDTH*.9)),(gCore.randf(G_HEIGHT*1.1, G_HEIGHT*1.2)));
+        vec spawnLoc;
+        bool gfxOri;
+        int velMod;
+        switch (spawnLOC) {
+            case L_TOP:
+            {
+                velMod = 1;
+                gfxOri = true;
+                spawnLoc = vmake((gCore.randf(G_WIDTH*.1, G_WIDTH*.9)),(gCore.randf(G_HEIGHT*1.1, G_HEIGHT*1.2)));
+                break;
+            }
+            case L_BOTTOM:
+            {
+                velMod = -1;
+                gfxOri = false;
+                spawnLoc = vmake((gCore.randf(G_WIDTH*.1, G_WIDTH*.9)),(0 - gCore.randf(G_HEIGHT*0.1, G_HEIGHT*0.2)));
+                break;
+            }
+            default:
+            {
+                velMod = 1;
+                gfxOri = true;
+                spawnLoc = vmake((gCore.randf(G_WIDTH*.1, G_WIDTH*.9)),(gCore.randf(G_HEIGHT*1.1, G_HEIGHT*1.2)));
+                break;
+            }
+                
+        }
+        
         
         //create switch statement for different etypes or perhaps expand entity labels in createEntity
         //createEntity(etype, spawnLoc, STRAIGHT_VEC, PLAYER_SHIP_W, PLAYER_SHIP_H, 0.f, greenShip[2], greenShip, 1);
         if (etype == E_JET) {
-            createEntity(etype, spawnLoc, STRAIGHT_VEC, 0, 0, 0.f, greenShip[2], greenShip, 1);
+            createEntity(etype, spawnLoc, vscale(STRAIGHT_VEC, velMod), 0, 0, 0.f, greenShip[2], greenShip, gfxOri);
         }
         else if (etype == E_JET_2) {
-            createEntity(etype, spawnLoc, STRAIGHT_VEC, 0, 0, 0.f, greenShip2[2], greenShip2, 1);
+            createEntity(etype, spawnLoc, vscale(STRAIGHT_VEC, velMod), 0, 0, 0.f, greenShip2[2], greenShip2, gfxOri);
         }
         else if (etype == E_BLADE) {
-            
-            createEntity(etype, spawnLoc, vmake(randf(EN_BLADE_MIN_X_VEL, EN_BLADE_MAX_X_VEL), randf(EN_BLADE_MIN_Y_VEL, EN_BLADE_MAX_Y_VEL)), 0, 0, 0.f, blade[2], blade, 0);
+            createEntity(etype, spawnLoc, vmake(randf(EN_BLADE_MIN_X_VEL, EN_BLADE_MAX_X_VEL), (velMod)*randf(EN_BLADE_MIN_Y_VEL, EN_BLADE_MAX_Y_VEL)), 0, 0, 0.f, blade[2], blade, gfxOri);
         }
         enemiesSpawned++;
     }//generate enemy
@@ -2514,7 +2756,7 @@ boss* gEngine::generateBoss(int level) {
             newBoss->omegaWepChargeTime = BOSS_OMEGA_CHARGE_TIME;
             newBoss->omegaWepFireTime = EN_BLUE_LAZER_BLAST_TIME;
             newBoss->numOfSegments = 4;
-        
+            newBoss->scoreVal = SCORE_BOSS1;
             newBoss->segments = new entity*[newBoss->numOfSegments];
             
             
@@ -2587,7 +2829,7 @@ boss* gEngine::generateBoss(int level) {
         }
         default:
         {
-            
+            break;
         }
     }
     
@@ -2694,14 +2936,11 @@ void gEngine::resetGame(void) {
     
     game_state = GS_PLAYING;
     
-    bkgMultiplier = 0.5f;
-    bkgMultiplier2 = 1.5f;
-    
-    
     //create the player ship
     
-    createEntity(E_PLAYERSHIP, vmake(G_WIDTH/2.0f,(0+(PLAYER_SHIP_H/2))), vmake(0,0), PLAYER_SHIP_W, PLAYER_SHIP_H, 0, T_BSHIP_C,beigeShip); //this is how you insert entities into the entityList now
+    createEntity(E_PLAYERSHIP, vmake(G_WIDTH/2.0f,(0+(gCore.getTexHeight(player_stats.shipType[2])/2))), vmake(0,0), 0, 0, 0, player_stats.shipType[2], player_stats.shipType); //this is how you insert entities into the entityList now
     static_cast<player*>(PSHIP)->numOmegaWeapon = 2;
+    //static_cast<player*>(PSHIP)->currentTertiaryWeapon = T_SIDEWAYS_ML_SINGLE_SHOT;
     levelBoss = nullptr;
     //DEBUG
     //createAnimation(A_EXP_REG, nullptr, vmake(G_WIDTH/2, G_HEIGHT/2), vmake(0,0), ENEMY_EXPLOSION_TIME, EXPLOSION_SIZE_MODIFIER);
@@ -2794,7 +3033,7 @@ void entity::updatePos(void) {
             newPosition.y = (0) + (halfheight);
         }
     }
-    else if (type == E_JET || type == E_JET_2 || type == E_RED_JET || type == E_RED_BLOB) { //enemy jet boundaries, jets are dumb, so they can fly off the screen on the bottom and never go back up
+    else if (type == E_JET || type == E_JET_2 || type == E_RED_JET || type == E_RED_BLOB) { //enemy jet boundaries, jets are dumb, so they can fly off the screen on the bottom or top and never go back up
         //set horizontile boundaries
         if ((newPosition.x + halfwidth) >= G_WIDTH) {
             reverseXVel();
@@ -2856,12 +3095,12 @@ void entity::updatePos(void) {
     //if entities would move past a certain threashold, delete them
     //delete entities that are off the screen
     if (type == E_PLAYER_WEAPON) {
-        if (pos.y > (G_HEIGHT+height)) {
+        if (pos.y > (G_HEIGHT+height) || pos.y < (0-height)) {
             isActive = false;
             
         }
     }
-    else if ( (pos.y > (G_HEIGHT*1.5)) || (pos.y < (0-height)) || (pos.x < (0-width)) || (pos.x > (G_WIDTH+width))) {
+    else if ( (pos.y > (G_HEIGHT*1.5)) || (pos.y < (0-(G_HEIGHT*.2))) || (pos.x < (0-width)) || (pos.x > (G_WIDTH+width))) {
         isActive = false;
     }
     
@@ -3048,9 +3287,19 @@ void item::animation(void) {
 
 //player fireWeapons()
 void player::fireWeapons(gEngine *game) {
+    
+    
+    //determine orientation of the weapons based on the orientation of the ship
+    int orientation;
+    if (flipGfx) {
+        orientation = -1;
+    }
+    else
+        orientation = 1;
+    
     //primary weapon
     if (reloadTimer <= 0.f) {
-        int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(0, BLASTER_Y_VELOCITY), 0, 0, 0, currentWeapon, 0);
+        int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(0, (orientation)*(BLASTER_Y_VELOCITY)), 0, 0, 0, currentWeapon, 0, flipGfx);
         //cout << "FIRE weapon: " << weapIndex << endl;
         
         if (weapIndex > 0) {
@@ -3067,9 +3316,11 @@ void player::fireWeapons(gEngine *game) {
     if (currentSecondaryWeapon != T_BKG) { //if PSHIP has a secondary weapon
         if (secondaryReloadTimer <= 0.f) {
             
-            int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(0, ROCKET_Y_VELOCITY), 0, 0, 0, currentSecondaryWeapon, 0);
-            if (weapIndex > 0)
+            int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(0, (orientation)*(ROCKET_Y_VELOCITY)), 0, 0, 0, currentSecondaryWeapon, 0, flipGfx);
+            if (weapIndex > 0) {
                 secondaryReloadTimer = static_cast<weapon*>(game->entityList[weapIndex])->reloadInterval;
+                game->shotsFired++;
+            }
         }//fire player secondary weapon
         else if (secondaryReloadTimer > 0.f)
             secondaryReloadTimer -= RELOAD_DECAY;
@@ -3079,9 +3330,10 @@ void player::fireWeapons(gEngine *game) {
     
     if (currentTertiaryWeapon != T_BKG) {
         if (tertiaryReloadTimer <= 0.f) {
-            int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(-1*(BLASTER_Y_VELOCITY), BLASTER_Y_VELOCITY), 0, 0, 0, currentTertiaryWeapon, 0, false, false);
-            int weapIndex2 = game->createEntity(E_PLAYER_WEAPON, pos, vmake(BLASTER_Y_VELOCITY, BLASTER_Y_VELOCITY), 0, 0, 0, currentTertiaryWeapon, 0, false, true);
+            int weapIndex = game->createEntity(E_PLAYER_WEAPON, pos, vmake(-1*(BLASTER_Y_VELOCITY), (orientation)*(BLASTER_Y_VELOCITY)), 0, 0, 0, currentTertiaryWeapon, 0, flipGfx, false);
+            int weapIndex2 = game->createEntity(E_PLAYER_WEAPON, pos, vmake(BLASTER_Y_VELOCITY, (orientation)*(BLASTER_Y_VELOCITY)), 0, 0, 0, currentTertiaryWeapon, 0, flipGfx, true);
             if (weapIndex > 0 && weapIndex2 > 0) {
+                game->shotsFired += 2; // b/c tertiary weapons fire two shots
                 tertiaryReloadTimer = static_cast<weapon*>(game->entityList[weapIndex])->reloadInterval;
             }
         }
@@ -3094,11 +3346,19 @@ void player::fireWeapons(gEngine *game) {
 //enemy fireWeapons()
 void enemy::fireWeapons(gEngine *game) {
     
+    //determine orientation of the weapons based on the orientation of the ship
+    int orientation;
+    if (flipGfx) {
+        orientation = -1;
+    }
+    else
+        orientation = 1;
+    
     //entity *enemyObj = entityList[i];
     if (currentWeapon != T_BKG) {
         if (reloadTimer <= 0.f) {
             if (game->gCore.randchance(50.f)) {
-                int weapIndex = game->createEntity(E_ENEMY_WEAPON, pos, vmake(0, EN_BLASTER_Y_VELOCITY), 0, 0, 0, currentWeapon, 0, 1);
+                int weapIndex = game->createEntity(E_ENEMY_WEAPON, pos, vmake(0, (orientation)*(EN_BLASTER_Y_VELOCITY)), 0, 0, 0, currentWeapon, 0, flipGfx);
                 
                 if (weapIndex > 0) {
                     //entityList[weapIndex]->reverseYVel();
@@ -3120,7 +3380,7 @@ void enemy::fireWeapons(gEngine *game) {
     if (currentSecondaryWeapon != T_BKG) {
         if (secondaryReloadTimer <= 0.f) {
             if (game->gCore.randchance(50.f)) {
-                int weapIndex = game->createEntity(E_ENEMY_WEAPON, pos, vmake(0, EN_ROCKET_Y_VEL), 0, 0, 0, currentSecondaryWeapon, 0, 1);
+                int weapIndex = game->createEntity(E_ENEMY_WEAPON, pos, vmake(0, (orientation)*(EN_ROCKET_Y_VEL)), 0, 0, 0, currentSecondaryWeapon, 0, flipGfx);
                 
                 if (weapIndex > 0) {
                     //entityList[weapIndex]->reverseYVel();
@@ -3330,7 +3590,7 @@ void boss::fireControl(gEngine *game) {
             //cout << "check 2.1\n";
             if (segments[i]->getReloadTimer() <= 0.f) {
                 if (game->gCore.randchance(100.f)) {
-                    int weapIndex = game->createEntity(E_ENEMY_WEAPON, segments[i]->pos, vmake(0, EN_BLASTER_Y_VELOCITY), 0, 0, 0, segments[i]->getCurWeapon(), 0, 1);
+                    int weapIndex = game->createEntity(E_ENEMY_WEAPON, segments[i]->pos, vmake(0, -(EN_BLASTER_Y_VELOCITY)), 0, 0, 0, segments[i]->getCurWeapon(), 0, 1);
                     
                     if (weapIndex > 0) {
                         segments[i]->getReloadTimer() = randf(0.f, static_cast<weapon*>(game->entityList[weapIndex])->reloadInterval);

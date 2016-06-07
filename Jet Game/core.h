@@ -17,6 +17,7 @@
 
 #define MAX_TEXTURES 256
 #define MAX_SOUNDS 50
+#define FIRST_SFX W_IND_FAILURE
 #define SHADOW_OFFSET 60.f
 #define SHADOW_SIZE_MOD 0.75f
 
@@ -34,7 +35,7 @@ enum WavIDs {
     // *** SFX ***
     
     //*** SFX ***
-    //indicator sounds**
+    //indicator sounds**  NOTE: W_IND_FAILURE is set as the FIRST_SFX macro index, do not change
     W_IND_FAILURE, W_IND_BOSS, W_IND_VICTORY,
     
     //explosions**
@@ -60,7 +61,20 @@ enum TexIDs {
     T_HP_BAR, T_LEVEL_BAR, T_BOSS_HP_BAR, T_OMEGA_BOMB_INDI,
     
     //player ship textures **
+    //beige ship
     T_BSHIP_C, T_BSHIP_L, T_BSHIP_LL, T_BSHIP_R, T_BSHIP_RR,
+    
+    //silver ship (slim)
+    T_SSHIP_C, T_SSHIP_L, T_SSHIP_LL, T_SSHIP_R, T_SSHIP_RR,
+    
+    //silver ship (bulky)
+    T_SSHIP2_C, T_SSHIP2_L, T_SSHIP2_LL, T_SSHIP2_R, T_SSHIP2_RR,
+    
+    //silver ship (midrange)
+    T_SSHIP3_C, T_SSHIP3_L, T_SSHIP3_LL, T_SSHIP3_R, T_SSHIP3_RR,
+    
+    //carrot ship (Hardcore mode)
+    T_CSHIP_C, T_CSHIP_L, T_CSHIP_LL, T_CSHIP_R, T_CSHIP_RR,
     
     //enemy ship textures **
     //green ship
@@ -162,13 +176,17 @@ class core {
         vec RenderCenteredString(const char string[], vec pos, float fontSize, rgba color, bool additive);
     
         //openAL bindings
-    
         ALuint loadWave(const char filename[]);
         void unloadWave(int wavIndex);
         void playSound(int soundIndex, float volume = 1.f, bool Loop = false);
         void stopSound(int soundIndex);
         void stopAllSounds(void);
         void pauseAllSounds(bool resume = false);
+        void setVolume(int soundIndex, float newVolume);
+        void setMusicVolume(float newVolume);
+        void setSfxVolume(float newVolume);
+        void setGlobalVolume(float newVolume);
+    
     
         //submethods
         float getTexWidth(TexIDs tex) { return(gTextures[tex].pixw); }
@@ -271,11 +289,41 @@ class core {
             {"data/Textures/Info/omegaBombInd.bmp", false, 0},
             
             //Player Ship Textures **
+            //beige ship
             {"data/Textures/PlayerShipModels/BshipC.bmp", false, 0},
             {"data/Textures/PlayerShipModels/BshipL.bmp", false, 0},
             {"data/Textures/PlayerShipModels/BshipLL.bmp", false, 0},
             {"data/Textures/PlayerShipModels/BshipR.bmp", false, 0},
             {"data/Textures/PlayerShipModels/BshipRR.bmp", false, 0},
+            
+            //silver ship (slim)
+            {"data/Textures/PlayerShipModels/SshipC.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/SshipL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/SshipLL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/SshipR.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/SshipRR.bmp", false, 0},
+            
+            //silver ship (bulky)
+            {"data/Textures/PlayerShipModels/Sship2C.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship2L.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship2LL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship2R.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship2RR.bmp", false, 0},
+            
+            //silver ship (mid range)
+            {"data/Textures/PlayerShipModels/Sship3C.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship3L.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship3LL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship3R.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/Sship3RR.bmp", false, 0},
+            
+            //carrot ship (hardcore)
+            {"data/Textures/PlayerShipModels/CshipC.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/CshipL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/CshipLL.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/CshipR.bmp", false, 0},
+            {"data/Textures/PlayerShipModels/CshipRR.bmp", false, 0},
+            
             
             //Enemy Ship Textures **
             //green jet

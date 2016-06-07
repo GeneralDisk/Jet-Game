@@ -406,7 +406,6 @@ if (i != 0) { // choose new sector for each line based on previous line's sector
  glfwTerminate();
  //}
  
- //cout << "FUCKING CRACKERS\n";
  }
 **/
 /**
@@ -425,6 +424,37 @@ if (i != 0) { // choose new sector for each line based on previous line's sector
  else if (curSelectedMenuIndex == curMenuSize-1) { //go back to main menu
  curMenu = M_MAIN_MENU;
  } **/
+
+
+
+/**if (space && (PSHIP->getReloadTimer(0) <= 0.f)) {
+ 
+ 
+ int weapIndex = createEntity(E_PLAYER_WEAPON, PSHIP->pos, vmake(0, BLASTER_Y_VELOCITY), 0, 0, 0, PSHIP->getCurWeapon(0), 0);
+ //cout << "FIRE weapon: " << weapIndex << endl;
+ 
+ if (weapIndex > 0) {
+ gCore.playSound(W_LASER_SHOT, LASER_VOL*sfxVolume*masterVolume);
+ shotsFired++;
+ PSHIP->getReloadTimer(0) = static_cast<weapon*>(entityList[weapIndex])->reloadInterval;
+ }
+ 
+ }//fire player ship weapon
+ else if (PSHIP->getReloadTimer(0) > 0.f)
+ PSHIP->getReloadTimer(0) -= RELOAD_DECAY;
+ 
+ //secondary weapon
+ if (PSHIP->subType == EST_SECONDARY_WEP) { //if PSHIP has a secondary weapon
+ if (space && (PSHIP->getReloadTimer(1) <= 0.f)) {
+ 
+ int weapIndex = createEntity(E_PLAYER_WEAPON, PSHIP->pos, vmake(0, ROCKET_Y_VELOCITY), 0, 0, 0, PSHIP->getCurWeapon(1), 0);
+ if (weapIndex > 0)
+ PSHIP->getReloadTimer(1) = static_cast<weapon*>(entityList[weapIndex])->reloadInterval;
+ }//fire player secondary weapon
+ else if (PSHIP->getReloadTimer(1) > 0.f)
+ PSHIP->getReloadTimer(1) -= RELOAD_DECAY;
+ } **/
+
 
 
 /**

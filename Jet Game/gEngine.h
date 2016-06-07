@@ -13,13 +13,14 @@
 #include "sys.h"
 #include "core.h"
 
-#define PLAYER_SHIP_W 108
-#define PLAYER_SHIP_H 150
 #define MAX_ENTITIES 256
 #define MAX_ANIMATIONS 50
 
+
 //forward class declarations
 class gEngine;
+
+static int ZERO = 0;
 
 //===============================================================
 //MARK: Menu structs
@@ -132,6 +133,7 @@ public:
     virtual void reverseXVel(void) {vel.x = (vel.x * -1);}
     virtual void reverseYVel(void) {vel.y = (vel.y * -1);}
     virtual int getDropscale(void) { return(0); }
+    virtual int& getScore(void) {ZERO = 0; return(ZERO); }
     virtual TexIDs getGfx(int index) {return(curGfx);}
     virtual float& getHp(void) {float x = 10.f; return(x);}
     virtual float& getDirTimer(void) {float x = 0.f; return(x); }
@@ -155,6 +157,7 @@ class player : public entity {
         float secondaryReloadTimer;
         float tertiaryReloadTimer;
         float explosionTimer;
+        int curScore;
         int numOmegaWeapon;
         int expTexAmount;
         TexIDs expGfxSet[20];
@@ -163,6 +166,7 @@ class player : public entity {
         TexIDs currentTertiaryWeapon;
         //TexIDs gfxSet[5];
     
+        int& getScore(void) { return(curScore); }
         TexIDs getGfx(int index) { return(gfxSet[index]);}
         float& getHp(void) { return(hp); }
         float& getReloadTimer(int primaryOrSecondary) { if (primaryOrSecondary == 0) { return(reloadTimer); } else if (primaryOrSecondary == 1) { return(secondaryReloadTimer); } else { return(tertiaryReloadTimer); } }
@@ -187,6 +191,7 @@ class enemy : public entity {
         float secondaryReloadTimer;
         float tertiaryReloadTimer;
         float explosionTimer;
+        int scoreVal;
         int dropscale;
         int expTexAmount;
         TexIDs expGfxSet[20];
@@ -199,6 +204,7 @@ class enemy : public entity {
         //overloaded virtual functions
         void reverseXVel(void) {vel.x = (vel.x * -1); if (vel.x < 0) {direction = D_LEFT;} else if (vel.x > 0) {direction = D_RIGHT;}}
         int getDropscale(void) { return(dropscale); }
+        int& getScore(void) { return(scoreVal); }
         float& getDirTimer(void) { return(directionTimer); }
         float& getHp(void) { return(hp); }
     
@@ -280,6 +286,7 @@ class boss {
         float omegaWepTimer;
         float omegaWepChargeTime;
         float omegaWepFireTime;
+        int scoreVal;
         int width;
         int height;
         EState state;
@@ -342,10 +349,19 @@ public:
     
 };
 
+struct playerStats {
+    float playerHP;
+    TexIDs weapons[3];
+    float armorRating;
+    TexIDs* shipType;
+    int score;
+};
+
 
 //===============================================================
 //MARK: Game Engine
 enum gState { GS_PLAYING, GS_MAIN_MENU, GS_STATSCREEN, GS_PAUSE, GS_DYING, GS_BOSSFIGHT, GS_VICTORY, GS_EXIT };
+enum location { L_TOP, L_BOTTOM, L_LEFT, L_RIGHT };
 
 class gEngine {
     public:
@@ -367,13 +383,14 @@ class gEngine {
     protected:
         //submethods ================== ==================
         void renderMenu(Menu *menu);
+        void renderScore(int levelScore, int overallScore);
         void generateTerrain(int level);
         int createEntity(EType eType, vec position, vec velocity, int w, int h, float inertia, TexIDs curGFX, TexIDs GFXset[20], bool flipGFX = 0, bool reverseGFX = 0);
         int createAnimation(AType aType, entity *parentE, vec position, vec velocity, float animationLen, float sizeModifier = 1.f, int numRepeats = 0, bool flipGFX = 0);
         void moveAniToFront(int index);
         void stopAllAnimations(void); //stops all currently active animations
         void generateLevelEnemies(void);
-        void generateEnemy(EType etype, float chanceToSpawn);
+        void generateEnemy(EType etype, float chanceToSpawn, location spawnLOC);
         boss* generateBoss(int level);
         void spawnItem(vec pos, int dropscale);
         void resetGame(void);
@@ -406,13 +423,21 @@ class gEngine {
         bool prevrightBracket;
         bool prevpressP;
         bool prevpressQ;
+        bool prevpressX;
+        bool prevpressE;
+        bool prevpressW;
+        bool prevpressA;
+        bool prevpressS;
+        bool prevpressD;
         bool preventer;
+    
     
         //ENDTEST
     
     
         //interior variables ================== ==================
         gState game_state;
+        playerStats player_stats;
         bool victory;
         bool isBossSpawned;
         bool prevPress;
@@ -420,8 +445,6 @@ class gEngine {
         float masterVolume;
         float musicVolume;
         float sfxVolume;
-        float bkgMultiplier;
-        float bkgMultiplier2;
         float main_timer;
         float dying_timer;
         float key_timer;
@@ -436,33 +459,37 @@ class gEngine {
         //player statistic counters ================== ==================
         int enemiesSpawned;
         int enemiesKilled;
-        
         int shotsFired;
         int shotsHit;
-
         float hpGained;
         float hpLost;
     
         //Texture Packs ================== ==================
-        //ship packs
-        TexIDs beigeShip[5] = {T_BSHIP_LL, T_BSHIP_L, T_BSHIP_C, T_BSHIP_R, T_BSHIP_RR}; //player ship
+        //ship packs ***
+        //player ships
+        TexIDs beigeShip[5] = {T_BSHIP_LL, T_BSHIP_L, T_BSHIP_C, T_BSHIP_R, T_BSHIP_RR};
+        TexIDs silverShip[5] = {T_SSHIP_LL, T_SSHIP_L, T_SSHIP_C, T_SSHIP_R, T_SSHIP_RR}; //slim
+        TexIDs silverShip2[5] = {T_SSHIP2_LL, T_SSHIP2_L, T_SSHIP2_C, T_SSHIP2_R, T_SSHIP2_RR}; //bulky
+        TexIDs silverShip3[5] = {T_SSHIP3_LL, T_SSHIP3_L, T_SSHIP3_C, T_SSHIP3_R, T_SSHIP3_RR}; //midrange
+        TexIDs carrotShip[5] = {T_CSHIP_LL, T_CSHIP_L, T_CSHIP_C, T_CSHIP_R, T_CSHIP_RR}; //player ship
+    
         TexIDs greenShip[5] = {T_GSHIP_LL, T_GSHIP_L, T_GSHIP_C, T_GSHIP_R, T_GSHIP_RR};
         TexIDs greenShip2[5] = {T_GSHIP2_LL, T_GSHIP2_L, T_GSHIP2_C, T_GSHIP2_R, T_GSHIP2_RR};
         TexIDs redShip[5] = {T_RSHIP_LL, T_RSHIP_L, T_RSHIP_C, T_RSHIP_R, T_RSHIP_RR};
         TexIDs redBlob[4] = {T_RBLOB_00, T_RBLOB_01, T_RBLOB_02, T_RBLOB_03};
         TexIDs blade[4] = {T_BLADE_00, T_BLADE_01, T_BLADE_02, T_BLADE_03};
     
-        //boss packs
+        //boss packs ***
         TexIDs boss1body[6] = {T_BOSS_BLC, T_BOSS_BMC, T_BOSS_BRC, T_BOSS_BLD, T_BOSS_BMD, T_BOSS_BRD};
         TexIDs boss1charge[8] = {T_BOSS_C0, T_BOSS_C1, T_BOSS_C2, T_BOSS_C3, T_BOSS_C4, T_BOSS_C5, T_BOSS_C6, T_BOSS_C7};
     
-        //weapon packs
+        //weapon packs ***
         TexIDs blueLaser[3] = {T_BLUE_LASER_BASE, T_BLUE_LASER_SHAFT, T_BLUE_LASER_TIP};
     
-        //item packs
+        //item packs ***
         TexIDs hpBlob[4] = {T_HP_BLOB1, T_HP_BLOB2, T_HP_BLOB3, T_HP_BLOB4};
     
-        //explosion packs
+        //explosion packs ***
         TexIDs nukeEXP[17] = {T_EXP_NUKE_01, T_EXP_NUKE_02, T_EXP_NUKE_03, T_EXP_NUKE_04, T_EXP_NUKE_05, T_EXP_NUKE_06, T_EXP_NUKE_07, T_EXP_NUKE_08, T_EXP_NUKE_09, T_EXP_NUKE_10, T_EXP_NUKE_11, T_EXP_NUKE_12, T_EXP_NUKE_13, T_EXP_NUKE_14, T_EXP_NUKE_15, T_EXP_NUKE_16, T_EXP_NUKE_17};
     
         TexIDs regEXP[13] = {T_EXP_REG_01, T_EXP_REG_02, T_EXP_REG_03, T_EXP_REG_04, T_EXP_REG_05, T_EXP_REG_06, T_EXP_REG_07, T_EXP_REG_08, T_EXP_REG_09, T_EXP_REG_10, T_EXP_REG_11, T_EXP_REG_12, T_EXP_REG_13};
