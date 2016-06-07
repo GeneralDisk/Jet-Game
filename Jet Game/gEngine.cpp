@@ -288,7 +288,7 @@ gEngine::gEngine(void) {
     player_stats.weapons[1] = T_BKG;
     player_stats.weapons[2] = T_BKG;
     player_stats.armorRating = 0.f;
-    player_stats.shipType = beigeShip;
+    player_stats.shipType = silverShip2;
     player_stats.score = 0;
   
     
